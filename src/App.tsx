@@ -1,4 +1,3 @@
-// src/App.tsx
 import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import "./App.css";
 import { api } from "./services/api";
@@ -23,14 +22,16 @@ const monthNames: string[] = [
 interface Booking {
   name: string;
   room: string;
-  hours: string;
+  inital_date: string; 
+  final_Date: string; 
 }
 
 // Interface para os dados do formulário
 interface FormData {
   name: string;
   room: string;
-  hours: string;
+  inital_date: string;
+  final_Date: string; 
 }
 
 const App: React.FC = () => {
@@ -45,7 +46,8 @@ const App: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     name: "",
     room: "Sala de Treinamento",
-    hours: "",
+    inital_date: "",
+    final_Date: "", // Campo para horário de término
   });
 
   const daysInMonth: number = new Date(year, month + 1, 0).getDate();
@@ -58,23 +60,20 @@ const App: React.FC = () => {
         const data = response.data;
 
         const loadedBookings: { [key: number]: Booking[] } = {};
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data.forEach((booking: any) => {
-          const day: number = new Date(booking.horario_inicio).getDate();
+          const day: number = new Date(booking.inital_date).getDate();
           if (!loadedBookings[day]) {
             loadedBookings[day] = [];
           }
           loadedBookings[day].push({
-            name: booking.nome,
-            room: booking.sala,
-            hours: `${booking.horario_inicio.split(" ")[1]} as ${
-              booking.horario_fim.split(" ")[1]
-            }`,
+            name: booking.name,
+            room: booking.room,
+            inital_date: booking.inital_date,
+            final_Date: booking.final_Date,
           });
         });
         setBookings(loadedBookings);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
+      } catch (error) {
         console.error("Erro ao carregar agendamentos:", error);
       }
     };
@@ -92,7 +91,8 @@ const App: React.FC = () => {
     setFormData({
       name: "",
       room: "Sala de Treinamento",
-      hours: "",
+      inital_date: "",
+      final_Date: "", // Resetar o campo de horário de término
     });
   };
 
@@ -110,24 +110,21 @@ const App: React.FC = () => {
     e.preventDefault();
     if (selectedDay === null) return;
 
-    const { name, room, hours } = formData;
-    const [startHour, endHour] = hours.split(" as ");
-
-    // Formatar as datas
+    const { name, room, inital_date, final_Date } = formData; // Desestruturação correta
     const formattedInitialDate = `${year}-${String(month + 1).padStart(
       2,
       "0"
-    )}-${String(selectedDay).padStart(2, "0")} ${startHour}`;
+    )}-${String(selectedDay).padStart(2, "0")} ${inital_date}`;
     const formattedFinalDate = `${year}-${String(month + 1).padStart(
       2,
       "0"
-    )}-${String(selectedDay).padStart(2, "0")} ${endHour}`;
+    )}-${String(selectedDay).padStart(2, "0")} ${final_Date}`; // Use final_Date
 
     try {
       // Enviar a requisição POST usando Axios
       const response = await api.post(`/create-appointments`, {
-        name: name,
-        room: room,
+        name,
+        room,
         inital_date: formattedInitialDate,
         final_Date: formattedFinalDate,
       });
@@ -140,16 +137,14 @@ const App: React.FC = () => {
         if (!updatedBookings[selectedDay]) {
           updatedBookings[selectedDay] = [];
         }
-        updatedBookings[selectedDay].push({ name, room, hours });
+        updatedBookings[selectedDay].push({ name, room, inital_date: formattedInitialDate, final_Date: formattedFinalDate });
         return updatedBookings;
       });
 
       // Fechar o modal e resetar o formulário
       handleCloseModal();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error.response) {
-        // O servidor respondeu com um status fora do intervalo 2xx
         console.error("Erro ao salvar o agendamento:", error.response.data);
         alert(
           `Erro: ${
@@ -157,13 +152,11 @@ const App: React.FC = () => {
           }`
         );
       } else if (error.request) {
-        // A requisição foi feita, mas nenhuma resposta foi recebida
         console.error("Erro: Nenhuma resposta recebida do servidor.");
         alert(
           "Erro: Não foi possível conectar ao servidor. Por favor, tente novamente."
         );
       } else {
-        // Algo aconteceu na configuração da requisição que acionou um erro
         console.error("Erro ao configurar a requisição:", error.message);
         alert("Ocorreu um erro inesperado. Por favor, tente novamente.");
       }
@@ -191,7 +184,10 @@ const App: React.FC = () => {
               <strong>Sala:</strong> {booking.room}
             </p>
             <p>
-              <strong>Horário:</strong> {booking.hours}
+              <strong>Horário de Início:</strong> {booking.inital_date}
+            </p>
+            <p>
+              <strong>Horário de Término:</strong> {booking.final_Date}
             </p>
           </div>
         ))}
@@ -260,13 +256,24 @@ const App: React.FC = () => {
               <br />
               <br />
 
-              <label htmlFor="hours">Horário:</label>
+              <label htmlFor="inital_date">Horário de Início:</label>
               <input
-                type="text"
-                id="hours"
-                name="hours"
-                placeholder="Ex: 12:00 as 13:00"
-                value={formData.hours}
+                type="time"
+                id="inital_date"
+                name="inital_date"
+                value={formData.inital_date}
+                onChange={handleChange}
+                required
+              />
+              <br />
+              <br />
+
+              <label htmlFor="final_Date">Horário de Término:</label>
+              <input
+                type="time"
+                id="final_Date"
+                name="final_Date"
+                value={formData.final_Date}
                 onChange={handleChange}
                 required
               />
