@@ -54,7 +54,7 @@ const App: React.FC = () => {
     // Carregar agendamentos ao carregar a página
     const fetchBookings = async () => {
       try {
-        const response = await api.get(`/Apointments`);
+        const response = await api.get(`/Appointments`);
         const data = response.data;
 
         const loadedBookings: { [key: number]: Booking[] } = {};
