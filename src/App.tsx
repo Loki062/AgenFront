@@ -49,10 +49,17 @@ const App: React.FC = () => {
         const response = await api.get(`/Appointment`);
         console.log("Dados recebidos da API:", response.data); // Verifique os dados recebidos
         const data = response.data;
-
+    
         const loadedBookings: { [key: number]: Booking[] } = {};
         data.forEach((booking: any) => {
-          const day: number = new Date(booking.inital_date).getDate();
+          const initialDate = new Date(booking.inital_date);
+          const day: number = initialDate.getDate(); // Extrair o dia corretamente
+          
+          if (isNaN(day)) {
+            console.error("Data inválida:", booking.inital_date); // Log de erro se a data for inválida
+            return; // Ignora essa entrada
+          }
+          
           if (!loadedBookings[day]) {
             loadedBookings[day] = [];
           }
@@ -69,6 +76,7 @@ const App: React.FC = () => {
         console.error("Erro ao carregar agendamentos:", error);
       }
     };
+    
 
     fetchBookings();
   }, [year, month]);
