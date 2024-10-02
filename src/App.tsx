@@ -119,9 +119,11 @@ const App: React.FC = () => {
     const hasConflict = dayBookings.some((booking) => {
       return (
         booking.room === room &&
-        ((inital_date >= booking.inital_date && inital_date < booking.final_Date) ||
-          (final_Date > booking.inital_date && final_Date <= booking.final_Date) ||
-          (inital_date <= booking.inital_date && final_Date >= booking.final_Date))
+        (
+          (inital_date >= booking.inital_date && inital_date < booking.final_Date) || // inital_date está entre inital_date e final_Date
+          (final_Date > booking.inital_date && final_Date <= booking.final_Date) || // final_Date está entre inital_date e final_Date
+          (inital_date <= booking.inital_date && final_Date >= booking.final_Date) // O agendamento cobre completamente o intervalo
+        )
       );
     });
 
@@ -293,10 +295,9 @@ const App: React.FC = () => {
               />
               <br />
               <br />
-
               <button type="submit">Agendar</button>
             </form>
-            <div className="bookings">{renderBookings()}</div>
+            {renderBookings()}
           </div>
         </div>
       )}
