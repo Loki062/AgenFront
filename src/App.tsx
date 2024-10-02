@@ -48,50 +48,45 @@ const App: React.FC = () => {
       try {
         const response = await api.get(`/Appointment`);
         const data = response.data;
+  
+        // Log detalhado para verificar a resposta
         console.log("Tipo de dados recebidos:", typeof data);
         console.log("Dados recebidos:", data);
-    if (!Array.isArray(data)) {
-      throw new TypeError("A resposta da API não é um array");
-    }
-    
+  
+        // Verifica se a resposta é um array
+        if (!Array.isArray(data)) {
+          console.error("Erro na estrutura dos dados:", data); // Log adicional
+          throw new TypeError("A resposta da API não é um array");
+        }
+  
         const loadedBookings: { [key: number]: Booking[] } = {};
         data.forEach((booking: any) => {
-          // Obtenha a data atual
-          const today = new Date();
-          const currentYear = today.getFullYear();
-          const currentMonth = String(today.getMonth() + 1).padStart(2, '0'); // Adiciona zero à esquerda se necessário
-          const currentDay = String(today.getDate()).padStart(2, '0'); // Adiciona zero à esquerda se necessário
-    
-          // Cria a data completa
-          const initialDateStr = `${currentYear}-${currentMonth}-${currentDay} ${booking.inital_date}`;
+          const initialDateStr = `${booking.inital_date}`; // Assume que inital_date já contém a data
           const initialDate = new Date(initialDateStr);
-          
-          const day: number = initialDate.getDate(); // Extrair o dia corretamente
-          
+          const day: number = initialDate.getDate();
+  
+          // Verifica se a data é válida
           if (isNaN(day)) {
-            console.error("Data inválida:", initialDateStr); // Log de erro se a data for inválida
+            console.error("Data inválida:", initialDateStr);
             return; // Ignora essa entrada
           }
-          
+  
           if (!loadedBookings[day]) {
             loadedBookings[day] = [];
           }
-          loadedBookings[day].push({
-            name: booking.name,
-            room: booking.room,
-            inital_date: booking.inital_date,
-            final_Date: booking.final_Date,
-          });
+          loadedBookings[day].push(booking);
         });
+  
         setBookings(loadedBookings);
-        console.log("Agendamentos carregados:", loadedBookings); // Verifique os agendamentos carregados
+        console.log("Agendamentos carregados:", loadedBookings);
       } catch (error) {
         console.error("Erro ao carregar agendamentos:", error);
       }
     };
-    
+  
     fetchBookings();
   }, [year, month]);
+  
 
   const handleDayClick = (day: number) => {
     console.log("Dia selecionado:", day); // Verifique o dia selecionado
