@@ -47,8 +47,12 @@ const App: React.FC = () => {
     const fetchBookings = async () => {
       try {
         const response = await api.get(`/Appointment`);
-        console.log("Dados recebidos da API:", response.data); // Verifique os dados recebidos
         const data = response.data;
+        console.log("Tipo de dados recebidos:", typeof data);
+        console.log("Dados recebidos:", data);
+    if (!Array.isArray(data)) {
+      throw new TypeError("A resposta da API não é um array");
+    }
     
         const loadedBookings: { [key: number]: Booking[] } = {};
         data.forEach((booking: any) => {
