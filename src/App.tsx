@@ -109,29 +109,27 @@ const App: React.FC = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (selectedDay === null) return;
-
+  
     const { name, room, inital_date, final_Date } = formData;
     const formattedInitialDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(selectedDay).padStart(2, "0")} ${inital_date}`;
     const formattedFinalDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(selectedDay).padStart(2, "0")} ${final_Date}`;
-
+  
     // Verificar se já existe um agendamento para a mesma sala e horário
     const dayBookings = bookings[selectedDay] || [];
     const hasConflict = dayBookings.some((booking) => {
       return (
         booking.room === room &&
-        (
-          (inital_date >= booking.inital_date && inital_date < booking.final_Date) || // inital_date está entre inital_date e final_Date
-          (final_Date > booking.inital_date && final_Date <= booking.final_Date) || // final_Date está entre inital_date e final_Date
-          (inital_date <= booking.inital_date && final_Date >= booking.final_Date) // O agendamento cobre completamente o intervalo
-        )
+        ((formattedInitialDate >= booking.inital_date && formattedInitialDate < booking.final_Date) || // Novo início dentro do intervalo
+        (formattedFinalDate > booking.inital_date && formattedFinalDate <= booking.final_Date) || // Novo término dentro do intervalo
+        (formattedInitialDate <= booking.inital_date && formattedFinalDate >= booking.final_Date)) // Novo agendamento cobre completamente o existente
       );
     });
-
+  
     if (hasConflict) {
       alert("Já existe um agendamento para essa sala no horário selecionado.");
       return;
     }
-
+  
     try {
       const response = await api.post(`/create-appointments`, {
         name,
@@ -139,9 +137,9 @@ const App: React.FC = () => {
         inital_date: formattedInitialDate,
         final_Date: formattedFinalDate,
       });
-
+  
       console.log(response);
-
+  
       // Atualizar agendamentos no estado
       setBookings((prevBookings) => {
         const updatedBookings = { ...prevBookings };
@@ -156,16 +154,14 @@ const App: React.FC = () => {
         });
         return updatedBookings;
       });
-
+  
       // Fechar o modal e resetar o formulário
       handleCloseModal();
     } catch (error: any) {
       if (error.response) {
         console.error("Erro ao salvar o agendamento:", error.response.data);
         alert(
-          `Erro: ${
-            error.response.data.error || "Falha ao salvar o agendamento."
-          }`
+          `Erro: ${error.response.data.error || "Falha ao salvar o agendamento."}`
         );
       } else if (error.request) {
         console.error("Erro: Nenhuma resposta recebida do servidor.");
@@ -178,6 +174,7 @@ const App: React.FC = () => {
       }
     }
   };
+  
 
   const renderBookings = () => {
     if (
