@@ -52,6 +52,18 @@ const App: React.FC = () => {
 
   const daysInMonth: number = new Date(year, month + 1, 0).getDate();
 
+  // Função para formatar as datas
+  const formatDate = (isoDate: string) => {
+    const date = new Date(isoDate);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Mês começa em 0
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  };
+
   useEffect(() => {
     // Carregar agendamentos ao carregar a página
     const fetchBookings = async () => {
@@ -116,7 +128,13 @@ const App: React.FC = () => {
   
     // Verificar se já existe um agendamento para a mesma sala e horário
     const dayBookings = bookings[selectedDay] || [];
-    const hasConflict = dayBookings.some((booking) => {
+    const formattedBookings = dayBookings.map((booking) => ({
+      ...booking,
+      inital_date: formatDate(booking.inital_date),
+      final_Date: formatDate(booking.final_Date),
+    }));
+
+    const hasConflict = formattedBookings.some((booking) => {
       return (
         booking.room === room &&
         ((formattedInitialDate >= booking.inital_date && formattedInitialDate < booking.final_Date) || // Novo início dentro do intervalo
@@ -252,9 +270,6 @@ const App: React.FC = () => {
                 onChange={handleChange}
                 required
               />
-              <br />
-              <br />
-
               <label htmlFor="room">Sala:</label>
               <select
                 id="room"
@@ -266,9 +281,6 @@ const App: React.FC = () => {
                 <option value="Sala de Treinamento">Sala de Treinamento</option>
                 <option value="Sala de Reunião">Sala de Reunião</option>
               </select>
-              <br />
-              <br />
-
               <label htmlFor="inital_date">Horário de Início:</label>
               <input
                 type="time"
@@ -278,9 +290,6 @@ const App: React.FC = () => {
                 onChange={handleChange}
                 required
               />
-              <br />
-              <br />
-
               <label htmlFor="final_Date">Horário de Término:</label>
               <input
                 type="time"
@@ -290,8 +299,6 @@ const App: React.FC = () => {
                 onChange={handleChange}
                 required
               />
-              <br />
-              <br />
               <button type="submit">Agendar</button>
             </form>
             {renderBookings()}
@@ -303,3 +310,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+
