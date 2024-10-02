@@ -22,8 +22,8 @@ const monthNames: string[] = [
 interface Booking {
   name: string;
   room: string;
-  inital_date: string; 
-  final_Date: string; 
+  inital_date: string;
+  final_Date: string;
 }
 
 // Interface para os dados do formulário
@@ -31,7 +31,7 @@ interface FormData {
   name: string;
   room: string;
   inital_date: string;
-  final_Date: string; 
+  final_Date: string;
 }
 
 const App: React.FC = () => {
@@ -56,7 +56,7 @@ const App: React.FC = () => {
     // Carregar agendamentos ao carregar a página
     const fetchBookings = async () => {
       try {
-        const response = await api.get(`/Appointments`);
+        const response = await api.get(`/Appointment`);
         const data = response.data;
 
         const loadedBookings: { [key: number]: Booking[] } = {};
@@ -110,18 +110,27 @@ const App: React.FC = () => {
     e.preventDefault();
     if (selectedDay === null) return;
 
-    const { name, room, inital_date, final_Date } = formData; // Desestruturação correta
-    const formattedInitialDate = `${year}-${String(month + 1).padStart(
-      2,
-      "0"
-    )}-${String(selectedDay).padStart(2, "0")} ${inital_date}`;
-    const formattedFinalDate = `${year}-${String(month + 1).padStart(
-      2,
-      "0"
-    )}-${String(selectedDay).padStart(2, "0")} ${final_Date}`; // Use final_Date
+    const { name, room, inital_date, final_Date } = formData;
+    const formattedInitialDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(selectedDay).padStart(2, "0")} ${inital_date}`;
+    const formattedFinalDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(selectedDay).padStart(2, "0")} ${final_Date}`;
+
+    // Verificar se já existe um agendamento para a mesma sala e horário
+    const dayBookings = bookings[selectedDay] || [];
+    const hasConflict = dayBookings.some((booking) => {
+      return (
+        booking.room === room &&
+        ((inital_date >= booking.inital_date && inital_date < booking.final_Date) ||
+          (final_Date > booking.inital_date && final_Date <= booking.final_Date) ||
+          (inital_date <= booking.inital_date && final_Date >= booking.final_Date))
+      );
+    });
+
+    if (hasConflict) {
+      alert("Já existe um agendamento para essa sala no horário selecionado.");
+      return;
+    }
 
     try {
-      // Enviar a requisição POST usando Axios
       const response = await api.post(`/create-appointments`, {
         name,
         room,
@@ -137,7 +146,12 @@ const App: React.FC = () => {
         if (!updatedBookings[selectedDay]) {
           updatedBookings[selectedDay] = [];
         }
-        updatedBookings[selectedDay].push({ name, room, inital_date: formattedInitialDate, final_Date: formattedFinalDate });
+        updatedBookings[selectedDay].push({
+          name,
+          room,
+          inital_date: formattedInitialDate,
+          final_Date: formattedFinalDate,
+        });
         return updatedBookings;
       });
 
@@ -282,9 +296,7 @@ const App: React.FC = () => {
 
               <button type="submit">Agendar</button>
             </form>
-            <div id="existingBookings" className="existing-bookings">
-              {renderBookings()}
-            </div>
+            <div className="bookings">{renderBookings()}</div>
           </div>
         </div>
       )}
