@@ -47,6 +47,7 @@ const App: React.FC = () => {
     const fetchBookings = async () => {
       try {
         const response = await api.get(`/Appointment`);
+        console.log("Dados recebidos da API:", response.data); // Verifique os dados recebidos
         const data = response.data;
 
         const loadedBookings: { [key: number]: Booking[] } = {};
@@ -63,6 +64,7 @@ const App: React.FC = () => {
           });
         });
         setBookings(loadedBookings);
+        console.log("Agendamentos carregados:", loadedBookings); // Verifique os agendamentos carregados
       } catch (error) {
         console.error("Erro ao carregar agendamentos:", error);
       }
@@ -72,6 +74,7 @@ const App: React.FC = () => {
   }, [year, month]);
 
   const handleDayClick = (day: number) => {
+    console.log("Dia selecionado:", day); // Verifique o dia selecionado
     setSelectedDay(day);
     setModalActive(true);
   };
@@ -127,7 +130,7 @@ const App: React.FC = () => {
         final_Date: formattedFinalDate,
       });
 
-      console.log(response);
+      console.log("Agendamento criado:", response.data); // Verifique a resposta ao criar o agendamento
 
       // Atualizar agendamentos no estado
       setBookings((prevBookings) => {
@@ -141,6 +144,7 @@ const App: React.FC = () => {
           inital_date: formattedInitialDate,
           final_Date: formattedFinalDate,
         });
+        console.log("Agendamentos atualizados:", updatedBookings); // Verifique os agendamentos atualizados
         return updatedBookings;
       });
 
@@ -232,15 +236,17 @@ const App: React.FC = () => {
               />
               <button type="submit">Agendar</button>
             </form>
-            {/* Renderizando os agendamentos para o dia selecionado */}
-            {selectedDay !== null && bookings[selectedDay] && bookings[selectedDay].map((booking, index) => (
-              <div key={index} className="booking">
-                <p><strong>Nome:</strong> {booking.name}</p>
-                <p><strong>Sala:</strong> {booking.room}</p>
-                <p><strong>Início:</strong> {booking.inital_date}</p>
-                <p><strong>Término:</strong> {booking.final_Date}</p>
-              </div>
-            ))}
+            <h3>Agendamentos para o dia {selectedDay}:</h3>
+            <div className="bookings-list">
+              {bookings[selectedDay]?.map((booking, index) => (
+                <div key={index} className="booking-item">
+                  <p><strong>Nome:</strong> {booking.name}</p>
+                  <p><strong>Sala:</strong> {booking.room}</p>
+                  <p><strong>Início:</strong> {booking.inital_date}</p>
+                  <p><strong>Término:</strong> {booking.final_Date}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
