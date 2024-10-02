@@ -4,18 +4,8 @@ import { api } from "./services/api";
 
 // Definir nomes dos meses
 const monthNames: string[] = [
-  "Janeiro",
-  "Fevereiro",
-  "Março",
-  "Abril",
-  "Maio",
-  "Junho",
-  "Julho",
-  "Agosto",
-  "Setembro",
-  "Outubro",
-  "Novembro",
-  "Dezembro",
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
 // Interface para um agendamento
@@ -47,22 +37,10 @@ const App: React.FC = () => {
     name: "",
     room: "Sala de Treinamento",
     inital_date: "",
-    final_Date: "", // Campo para horário de término
+    final_Date: "",
   });
 
   const daysInMonth: number = new Date(year, month + 1, 0).getDate();
-
-  // Função para formatar as datas
-  const formatDate = (isoDate: string) => {
-    const date = new Date(isoDate);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // Mês começa em 0
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
-  };
 
   useEffect(() => {
     // Carregar agendamentos ao carregar a página
@@ -104,13 +82,11 @@ const App: React.FC = () => {
       name: "",
       room: "Sala de Treinamento",
       inital_date: "",
-      final_Date: "", // Resetar o campo de horário de término
+      final_Date: "",
     });
   };
 
-  const handleChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
@@ -121,33 +97,28 @@ const App: React.FC = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (selectedDay === null) return;
-  
+
     const { name, room, inital_date, final_Date } = formData;
     const formattedInitialDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(selectedDay).padStart(2, "0")} ${inital_date}`;
     const formattedFinalDate = `${year}-${String(month + 1).padStart(2, "0")}-${String(selectedDay).padStart(2, "0")} ${final_Date}`;
-  
+
     // Verificar se já existe um agendamento para a mesma sala e horário
     const dayBookings = bookings[selectedDay] || [];
-    const formattedBookings = dayBookings.map((booking) => ({
-      ...booking,
-      inital_date: formatDate(booking.inital_date),
-      final_Date: formatDate(booking.final_Date),
-    }));
 
-    const hasConflict = formattedBookings.some((booking) => {
+    const hasConflict = dayBookings.some((booking) => {
       return (
         booking.room === room &&
         ((formattedInitialDate >= booking.inital_date && formattedInitialDate < booking.final_Date) || // Novo início dentro do intervalo
-        (formattedFinalDate > booking.inital_date && formattedFinalDate <= booking.final_Date) || // Novo término dentro do intervalo
-        (formattedInitialDate <= booking.inital_date && formattedFinalDate >= booking.final_Date)) // Novo agendamento cobre completamente o existente
+          (formattedFinalDate > booking.inital_date && formattedFinalDate <= booking.final_Date) || // Novo término dentro do intervalo
+          (formattedInitialDate <= booking.inital_date && formattedFinalDate >= booking.final_Date)) // Novo agendamento cobre completamente o existente
       );
     });
-  
+
     if (hasConflict) {
       alert("Já existe um agendamento para essa sala no horário selecionado.");
       return;
     }
-  
+
     try {
       const response = await api.post(`/create-appointments`, {
         name,
@@ -155,9 +126,9 @@ const App: React.FC = () => {
         inital_date: formattedInitialDate,
         final_Date: formattedFinalDate,
       });
-  
+
       console.log(response);
-  
+
       // Atualizar agendamentos no estado
       setBookings((prevBookings) => {
         const updatedBookings = { ...prevBookings };
@@ -172,58 +143,18 @@ const App: React.FC = () => {
         });
         return updatedBookings;
       });
-  
+
       // Fechar o modal e resetar o formulário
       handleCloseModal();
     } catch (error: any) {
       if (error.response) {
         console.error("Erro ao salvar o agendamento:", error.response.data);
-        alert(
-          `Erro: ${error.response.data.error || "Falha ao salvar o agendamento."}`
-        );
-      } else if (error.request) {
-        console.error("Erro: Nenhuma resposta recebida do servidor.");
-        alert(
-          "Erro: Não foi possível conectar ao servidor. Por favor, tente novamente."
-        );
+        alert(`Erro: ${error.response.data.error || "Falha ao salvar o agendamento."}`);
       } else {
         console.error("Erro ao configurar a requisição:", error.message);
         alert("Ocorreu um erro inesperado. Por favor, tente novamente.");
       }
     }
-  };
-  
-
-  const renderBookings = () => {
-    if (
-      selectedDay === null ||
-      !bookings[selectedDay] ||
-      bookings[selectedDay].length === 0
-    ) {
-      return <p>Não há agendamentos para este dia.</p>;
-    }
-
-    return (
-      <div>
-        <h3>Agendamentos:</h3>
-        {bookings[selectedDay].map((booking, index) => (
-          <div key={index} className="booking">
-            <p>
-              <strong>Nome:</strong> {booking.name}
-            </p>
-            <p>
-              <strong>Sala:</strong> {booking.room}
-            </p>
-            <p>
-              <strong>Horário de Início:</strong> {booking.inital_date}
-            </p>
-            <p>
-              <strong>Horário de Término:</strong> {booking.final_Date}
-            </p>
-          </div>
-        ))}
-      </div>
-    );
   };
 
   return (
@@ -301,7 +232,15 @@ const App: React.FC = () => {
               />
               <button type="submit">Agendar</button>
             </form>
-            {renderBookings()}
+            {/* Renderizando os agendamentos para o dia selecionado */}
+            {selectedDay !== null && bookings[selectedDay] && bookings[selectedDay].map((booking, index) => (
+              <div key={index} className="booking">
+                <p><strong>Nome:</strong> {booking.name}</p>
+                <p><strong>Sala:</strong> {booking.room}</p>
+                <p><strong>Início:</strong> {booking.inital_date}</p>
+                <p><strong>Término:</strong> {booking.final_Date}</p>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -310,4 +249,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-
