@@ -278,7 +278,6 @@ const App: React.FC = () => {
                 name="room"
                 value={formData.room}
                 onChange={handleChange}
-                required
               >
                 <option value="Sala de Treinamento">Sala de Treinamento</option>
                 <option value="Sala de Reunião">Sala de Reunião</option>
@@ -312,8 +311,6 @@ const App: React.FC = () => {
 
               <button type="submit">Agendar</button>
             </form>
-
-            {/* Renderizar agendamentos do dia selecionado */}
             {renderBookings()}
           </div>
         </div>
