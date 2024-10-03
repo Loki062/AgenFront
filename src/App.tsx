@@ -134,6 +134,22 @@ const App: React.FC = () => {
       "0"
     )}-${String(selectedDay).padStart(2, "0")} ${final_Date}`; // Use final_Date
 
+    // Verificação de agendamentos sobrepostos
+    const startTime = new Date(formattedInitialDate).getTime();
+    const endTime = new Date(formattedFinalDate).getTime();
+    const isOverlapping = bookings[selectedDay]?.some((booking) => {
+      const bookingStart = new Date(booking.inital_date).getTime();
+      const bookingEnd = new Date(booking.final_Date).getTime();
+      return (
+        (startTime < bookingEnd && endTime > bookingStart) // Verifica se os horários se sobrepõem
+      );
+    });
+
+    if (isOverlapping) {
+      alert("Erro: Já existe um agendamento para este horário na mesma sala.");
+      return;
+    }
+
     try {
       // Enviar a requisição POST usando Axios
       const response = await api.post(`/create-appointments`, {
@@ -297,6 +313,7 @@ const App: React.FC = () => {
               <button type="submit">Agendar</button>
             </form>
 
+            {/* Renderizar agendamentos do dia selecionado */}
             {renderBookings()}
           </div>
         </div>
