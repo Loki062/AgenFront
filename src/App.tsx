@@ -34,6 +34,20 @@ interface FormData {
   final_Date: string; 
 }
 
+// Função para formatar data e hora
+const formatDateTime = (dateString: string) => {
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  };
+  return new Intl.DateTimeFormat('pt-BR', options).format(date).replace(',', ' às ');
+};
+
 const App: React.FC = () => {
   const today = new Date();
   const year: number = today.getFullYear();
@@ -184,10 +198,10 @@ const App: React.FC = () => {
               <strong>Sala:</strong> {booking.room}
             </p>
             <p>
-              <strong>Horário de Início:</strong> {booking.inital_date}
+              <strong>Horário de Início:</strong> {formatDateTime(booking.inital_date)}
             </p>
             <p>
-              <strong>Horário de Término:</strong> {booking.final_Date}
+              <strong>Horário de Término:</strong> {formatDateTime(booking.final_Date)}
             </p>
           </div>
         ))}
@@ -282,9 +296,8 @@ const App: React.FC = () => {
 
               <button type="submit">Agendar</button>
             </form>
-            <div id="existingBookings" className="existing-bookings">
-              {renderBookings()}
-            </div>
+
+            {renderBookings()}
           </div>
         </div>
       )}
