@@ -44,6 +44,7 @@ const formatDateTime = (dateString: string) => {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
+    timeZone: 'America/Sao_Paulo', // Altere para o fuso horário desejado
   };
   return new Intl.DateTimeFormat('pt-BR', options).format(date).replace(',', ' às ');
 };
@@ -125,14 +126,8 @@ const App: React.FC = () => {
     if (selectedDay === null) return;
 
     const { name, room, inital_date, final_Date } = formData; // Desestruturação correta
-    const formattedInitialDate = `${year}-${String(month + 1).padStart(
-      2,
-      "0"
-    )}-${String(selectedDay).padStart(2, "0")} ${inital_date}`;
-    const formattedFinalDate = `${year}-${String(month + 1).padStart(
-      2,
-      "0"
-    )}-${String(selectedDay).padStart(2, "0")} ${final_Date}`; // Use final_Date
+    const formattedInitialDate = new Date(`${year}-${String(month + 1).padStart(2, "0")}-${String(selectedDay).padStart(2, "0")}T${inital_date}:00`).toISOString();
+    const formattedFinalDate = new Date(`${year}-${String(month + 1).padStart(2, "0")}-${String(selectedDay).padStart(2, "0")}T${final_Date}:00`).toISOString(); // Use final_Date
 
     // Verificação de agendamentos sobrepostos
     const startTime = new Date(formattedInitialDate).getTime();
@@ -269,8 +264,6 @@ const App: React.FC = () => {
                 onChange={handleChange}
                 required
               />
-              <br />
-              <br />
 
               <label htmlFor="room">Sala:</label>
               <select
@@ -282,8 +275,6 @@ const App: React.FC = () => {
                 <option value="Sala de Treinamento">Sala de Treinamento</option>
                 <option value="Sala de Reunião">Sala de Reunião</option>
               </select>
-              <br />
-              <br />
 
               <label htmlFor="inital_date">Horário de Início:</label>
               <input
@@ -294,8 +285,6 @@ const App: React.FC = () => {
                 onChange={handleChange}
                 required
               />
-              <br />
-              <br />
 
               <label htmlFor="final_Date">Horário de Término:</label>
               <input
@@ -306,11 +295,10 @@ const App: React.FC = () => {
                 onChange={handleChange}
                 required
               />
-              <br />
-              <br />
 
               <button type="submit">Agendar</button>
             </form>
+
             {renderBookings()}
           </div>
         </div>
