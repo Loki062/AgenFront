@@ -136,7 +136,8 @@ const App: React.FC = () => {
       const bookingStart = new Date(booking.inital_date).getTime();
       const bookingEnd = new Date(booking.final_Date).getTime();
       return (
-        (startTime < bookingEnd && endTime > bookingStart) // Verifica se os horários se sobrepõem
+        (startTime < bookingEnd && endTime > bookingStart) && // Verifica se os horários se sobrepõem
+        (booking.room === room) // Verifica se é a mesma sala
       );
     });
 
@@ -271,6 +272,7 @@ const App: React.FC = () => {
                 name="room"
                 value={formData.room}
                 onChange={handleChange}
+                required
               >
                 <option value="Sala de Treinamento">Sala de Treinamento</option>
                 <option value="Sala de Reunião">Sala de Reunião</option>
